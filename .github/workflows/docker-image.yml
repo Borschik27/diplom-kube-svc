@@ -62,12 +62,10 @@ jobs:
 
     - name: Tag and push Docker image
       run: |
-        docker tag test-container:test ghcr.io/${{ github.repository_owner }}/diplom-nginx-app:${{ env.new_tag }}
-        docker push ghcr.io/${{ github.repository_owner }}/diplom-nginx-app:${{ env.new_tag }}
-#        docker tag diplom-nginx-app:test ghcr.io/${{ github.repository_owner }}/diplom-nginx-app:latest
-#        docker push ghcr.io/${{ github.repository_owner }}/diplom-nginx-app:latest
-
-
+        REPO_NAME=$(echo "${{ github.repository_owner }}/diplom-nginx-app" | tr '[:upper:]' '[:lower:]')
+          
+        docker tag test-container:test ghcr.io/$REPO_NAME:${{ env.new_tag }}
+        docker push ghcr.io/$REPO_NAME:${{ env.new_tag }}
 
       # 5. Остановка и удаление контейнера
     - name: Stop and remove the container
