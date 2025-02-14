@@ -1,0 +1,38 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag test-build:$(date +%s)
+
+    - name: Run the Docker container
+      run: |
+        docker run -d -p 8080:80 --name test-container test-build:$(date +%s)
+
+      # 4. Проверка доступности сайта
+    - name: Check if the website is available
+      run: |
+        curl --fail http://localhost:8080 || exit 1
+
+    - name: Check if the website contains the expected content
+      run: |
+        curl --fail --silent http://localhost:8080 | grep "Link on" || exit 1
+
+      # 5. Остановка и удаление контейнера
+    - name: Stop and remove the container
+      run: |
+        docker stop test-container
+        docker rm test-container
