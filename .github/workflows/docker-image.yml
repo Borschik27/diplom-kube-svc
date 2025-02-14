@@ -64,7 +64,7 @@ jobs:
       run: |
         REPO_NAME=$(echo "${{ github.repository_owner }}/diplom-nginx-app" | tr '[:upper:]' '[:lower:]')
           
-        docker tag test-container:test ghcr.io/$REPO_NAME:${{ env.new_tag }}
+        docker tag test-build:test ghcr.io/$REPO_NAME:${{ env.new_tag }}
         docker push ghcr.io/$REPO_NAME:${{ env.new_tag }}
 
       # 5. Остановка и удаление контейнера
