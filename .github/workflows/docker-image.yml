@@ -5,7 +5,10 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
+  create:
+    tags:
+      - 'v*'
+      
 jobs:
 
   build:
@@ -30,6 +33,33 @@ jobs:
     - name: Check if the website contains the expected content
       run: |
         curl --fail --silent http://localhost:8080 | grep "Link on" || exit 1
+
+    - name: Get latest image tag
+      id: get-latest-tag
+      run: |
+        latest_tag=$(gh api "https://api.github.com/users/${{ github.repository_owner }}/packages/container/diplom-nginx-app/versions" \
+          --jq 'map(select(.metadata.container.tags | contains(["latest"]) | not)) | sort_by(.updated_at) | last | .metadata.container.tags[0]')
+        
+        echo "Latest tag: $latest_tag"
+        echo "tag=${latest_tag}" >> $GITHUB_ENV
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Increment tag
+      id: increment-tag
+      run: |
+        if [[ -z "${{ env.tag }}" ]]; then
+          new_tag="1.0.0"
+        else
+          IFS='.' read -ra parts <<< "${{ env.tag }}"
+          new_tag="${parts[0]}.$((${parts[1]} + 1)).${parts[2]}"
+        fi
+        echo "New tag: $new_tag"
+        echo "new_tag=${new_tag}" >> $GITHUB_ENV
+
+    - name: Log in to GitHub Container Registry
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
 
       # 5. Остановка и удаление контейнера
     - name: Stop and remove the container
