@@ -43,7 +43,7 @@ jobs:
         echo "Latest tag: $latest_tag"
         echo "tag=${latest_tag}" >> $GITHUB_ENV
       env:
-        GH_TOKEN: ${{ secrets.kuber_token }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Increment tag
       id: increment-tag
@@ -58,7 +58,7 @@ jobs:
         echo "new_tag=${new_tag}" >> $GITHUB_ENV
 
     - name: Log in to GitHub Container Registry
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      run: echo "${{ secrets.PACK_RW_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
     - name: Tag and push Docker image
       run: |
