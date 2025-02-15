@@ -70,9 +70,11 @@ jobs:
       run: |
         mkdir -p $HOME/.kube/
         echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
-
+        cat $HOME/.kube/config
+        
     - name: Set up kubectl
       run: |
+        kubectl version
         kubectl get nodes
 
     - name: Stop and remove the container
