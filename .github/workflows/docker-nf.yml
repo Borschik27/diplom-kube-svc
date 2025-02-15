@@ -2,9 +2,9 @@ name: Docker Image CI (Develop)
 
 on:
   push:
-    branches: [ "new-fitch" ]
+    branches: [ "new_fitch" ]
   pull_request:
-    branches: [ "new-fitch" ]
+    branches: [ "new_fitch" ]
   create:
     tags:
       - 'v.*'
