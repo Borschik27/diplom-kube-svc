@@ -1,0 +1,72 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches:
+      - "main"
+      - "dev"
+  pull_request:
+    branches:
+      - "main"
+      - "dev"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Log in to GitHub Container Registry
+      run: echo "${{ secrets.PRWT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Define branch and tags
+      id: vars
+      run: |
+        if [[ "${{ github.ref_name }}" == "main" ]]; then
+          IMAGE_TAG="latest"
+        elif [[ "${{ github.ref_name }}" == "dev" ]]; then
+          # Получаем последний тег
+          latest_tag=$(gh api https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/diplom-nginx-app/versions \
+            --jq 'map(select(.metadata.container.tags | contains(["latest"]) | not)) | sort_by(.updated_at) | last | .metadata.container.tags[0]')
+
+          echo "Latest tag: $latest_tag"
+
+          # Если тегов нет, начинаем с 0.0.1
+          if [[ -z "$latest_tag" ]]; then
+            new_tag="0.0.1"
+          else
+            IFS='.' read -ra parts <<< "$latest_tag"
+            new_tag="${parts[0]}.${parts[1]}.$((${parts[2]} + 1))"
+          fi
+          IMAGE_TAG="$new_tag"
+        fi
+
+        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+        echo "Using tag: $IMAGE_TAG"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag test-build:${{ env.IMAGE_TAG }}
+
+    - name: Run the Docker container
+      run: |
+        docker run -d -p 8080:80 --name test-container test-build:${{ env.IMAGE_TAG }}
+
+    - name: Check if the website is available
+      run: |
+        curl --fail http://localhost:8080 || exit 1
+
+    - name: Tag and push Docker image
+      run: |
+        REPO_NAME=$(echo "${{ github.repository_owner }}/diplom-nginx-app" | tr '[:upper:]' '[:lower:]')
+
+        docker tag test-build:${{ env.IMAGE_TAG }} ghcr.io/$REPO_NAME:${{ env.IMAGE_TAG }}
+        docker push ghcr.io/$REPO_NAME:${{ env.IMAGE_TAG }}
+
+    - name: Stop and remove the container
+      run: |
+        docker stop test-container
+        docker rm test-container
