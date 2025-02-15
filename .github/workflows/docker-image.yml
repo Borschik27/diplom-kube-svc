@@ -73,6 +73,7 @@ jobs:
           echo "${{ secrets.KUBE_CONF }}" | base64 --decode > $HOME/.kube/config
           kubectl version
           kubectl get nodes
+        fi
 
     - name: Stop and remove the container
       run: |
