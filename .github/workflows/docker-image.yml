@@ -66,6 +66,14 @@ jobs:
         docker tag test-build:${{ env.IMAGE_TAG }} ghcr.io/$REPO_NAME:${{ env.IMAGE_TAG }}
         docker push ghcr.io/$REPO_NAME:${{ env.IMAGE_TAG }}
 
+    - name: Set up kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
+
+    - name: Set up kubectl
+      run: |
+        kubectl get nodes
+
     - name: Stop and remove the container
       run: |
         docker stop test-container
