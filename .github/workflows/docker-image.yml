@@ -26,20 +26,20 @@ jobs:
       run: |
         if [[ "${{ github.ref_name }}" == "main" ]]; then
           IMAGE_TAG="latest"
-        elif [[ "${{ github.ref_name }}" == "dev" ]]; then
-          # Получаем последний тег
-          latest_tag=$(gh api https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/diplom-nginx-app/versions \
-            --jq 'map(select(.metadata.container.tags | contains(["latest"]) | not)) | sort_by(.updated_at) | last | .metadata.container.tags[0]')
+        else
+          # Проверяем, есть ли теги
+          tags=$(gh api https://api.github.com/repos/${{ github.repository }}/tags --jq '.[].name')
 
-          echo "Latest tag: $latest_tag"
-
-          # Если тегов нет, начинаем с 0.0.1
-          if [[ -z "$latest_tag" ]]; then
+          if [[ -z "$tags" ]]; then
+            # Если тегов нет, начинаем с 0.0.1
             new_tag="0.0.1"
           else
+            # Если теги есть, инкрементируем последний
+            latest_tag=$(echo "$tags" | sort -V | tail -n 1)
             IFS='.' read -ra parts <<< "$latest_tag"
             new_tag="${parts[0]}.${parts[1]}.$((${parts[2]} + 1))"
           fi
+
           IMAGE_TAG="$new_tag"
         fi
 
