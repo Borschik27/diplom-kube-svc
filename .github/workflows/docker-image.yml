@@ -69,7 +69,7 @@ jobs:
     - name: Set up kubectl
       run: |
         mkdir -p $HOME/.kube/
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
+        echo "${{ secrets.KUBE_CONF }}" | base64 --decode > $HOME/.kube/config
         cat $HOME/.kube/config
         
     - name: Set up kubectl
