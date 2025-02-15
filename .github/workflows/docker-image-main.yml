@@ -1,0 +1,43 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag test-build:test
+
+    - name: Run the Docker container
+      run: |
+        docker run -d -p 8080:80 --name test-container test-build:test
+
+    - name: Check if the website is available
+      run: |
+        curl --fail http://localhost:8080 || exit 1
+
+    - name: Check if the website contains the expected content
+      run: |
+        curl --fail --silent http://localhost:8080 | grep "Link on" || exit 1
+
+    - name: Log in to GitHub Container Registry
+      run: echo "${{ secrets.PRWT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Tag and push Docker image
+      run: |
+        REPO_NAME=$(echo "${{ github.repository_owner }}/diplom-nginx-app" | tr '[:upper:]' '[:lower:]')
+
+        docker tag test-build:test ghcr.io/$REPO_NAME:latest
+        docker push ghcr.io/$REPO_NAME:latest
+
+    - name: Stop and remove the container
+      run: |
+        docker stop test-container
+        docker rm test-container
