@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - "main"
-      - "new_fitch"
+      - "dev"
   pull_request:
     branches:
       - "main"
-      - "new_fitch"
+      - "dev"
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
       run: |
         if [[ "${{ github.ref_name }}" == "main" ]]; then
           IMAGE_TAG="latest"
-        else
+        elif [[ "${{ github.ref_name }}" == "dev" ]]; then
           # Получаем последний тег
           latest_tag=$(gh api https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/diplom-nginx-app/versions \
             --jq 'map(select(.metadata.container.tags | contains(["latest"]) | not)) | sort_by(.updated_at) | last | .metadata.container.tags[0]')
