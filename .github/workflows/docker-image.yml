@@ -28,7 +28,8 @@ jobs:
           IMAGE_TAG="latest"
         else
           # Проверяем, есть ли теги
-          tags=$(gh api https://api.github.com/repos/${{ github.repository }}/packages/container/diplom-nginx-app/versions --jq '.[].name')
+          tags=$$(gh api "https://api.github.com/users/${{ github.repository_owner }}/packages/container/diplom-nginx-app/versions" \
+          --jq 'map(select(.metadata.container.tags | contains(["latest"]) | not)) | sort_by(.updated_at) | last | .metadata.container.tags[0]'))
 
           if [[ -z "$tags" ]]; then
             # Если тегов нет, начинаем с 0.0.1
