@@ -28,7 +28,7 @@ jobs:
           IMAGE_TAG="latest"
         else
           # Проверяем, есть ли теги
-          tags=$(gh api https://api.github.com/repos/${{ github.repository }}/tags --jq '.[].name')
+          tags=$(gh api https://api.github.com/repos/${{ github.repository }}/packages/container/diplom-nginx-app/versions --jq '.[].name')
 
           if [[ -z "$tags" ]]; then
             # Если тегов нет, начинаем с 0.0.1
