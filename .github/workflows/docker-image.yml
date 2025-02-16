@@ -31,7 +31,7 @@ jobs:
           tags=$(gh api "https://api.github.com/users/${{ github.repository_owner }}/packages/container/diplom-nginx-app/versions" \
           --jq 'map(select(.metadata.container.tags | contains(["latest"]) | not)) | sort_by(.updated_at) | last | .metadata.container.tags[0]')
 
-          if [[ -z "$tags" ]]; then
+          if [[ -z "$tags" || "$tags" == "null" ]]; then
             # Если тегов нет, начинаем с 0.0.1
             new_tag="0.0.1"
           else
@@ -39,12 +39,12 @@ jobs:
             latest_tag=$(echo "$tags" | sort -V | tail -n 1)
             IFS='.' read -ra parts <<< "$latest_tag"
             new_tag="${parts[0]}.${parts[1]}.$((${parts[2]} + 1))"
-            IMAGE_TAG="$new_tag"
           fi
+          
+          IMAGE_TAG="$new_tag"
         fi
         echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
         echo "Using tag: $IMAGE_TAG"
-        echo "${{ secrets.GITHUB_TOKEN }}"
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
