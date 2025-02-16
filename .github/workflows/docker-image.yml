@@ -97,6 +97,7 @@ jobs:
               containers:
               - name: test-nginx
                 image: ghcr.io/$REPO_NAME:$IMAGE_TAG
+                imagePullPolicy: Always
                 ports:
                 - containerPort: 80
         ---
