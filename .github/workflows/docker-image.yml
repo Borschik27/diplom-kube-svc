@@ -141,6 +141,7 @@ jobs:
     - name: Clean up manifest file
       run: |
         rm -f k8s-deployment.yaml
+        rm -rf $HOME/.kube/
         
     - name: Stop and remove the container
       run: |
