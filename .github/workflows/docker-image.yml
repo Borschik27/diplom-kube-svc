@@ -136,6 +136,10 @@ jobs:
                       number: 80
         EOF
           kubectl apply -f k8s-deployment.yaml
+        else
+          mkdir -p $HOME/.kube/
+          echo "${{ secrets.KUBE_CONF }}" | base64 --decode > $HOME/.kube/config
+          kubectl rollout restart deployment sypchik-nginx -n default
         fi
 
     - name: Clean up manifest file
