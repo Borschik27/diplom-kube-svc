@@ -137,6 +137,8 @@ jobs:
         EOF
           kubectl apply -f k8s-deployment.yaml
         else
+          mkdir -p $HOME/.kube/
+          echo "${{ secrets.KUBE_CONF }}" | base64 --decode > $HOME/.kube/config
           kubectl rollout restart deployment sypchik-nginx -n default
         fi
 
